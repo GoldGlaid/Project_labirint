@@ -5,10 +5,6 @@ from random import choice
 
 import pygame
 
-pygame.mixer.init()
-pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
-pygame.mixer.music.play()
-
 
 def music(flag):
     if flag:
@@ -20,13 +16,50 @@ def music(flag):
 RES = WIDTH, HEIGHT = 1202, 902
 TILE = 60
 cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
+MINUTE = 0
+N = 0
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 pygame.display.set_caption('Лабиринт')
 
+pygame.display.set_caption('Лабиринт')
+FPS = 90
+
 all_sprites = pygame.sprite.Group()
+
+
+def start_screen():
+    intro_text = ["Лабиринт", "",
+                  "На языке Pythone",
+                  ]
+
+    fon = pygame.transform.scale(load_image('fon(1).jpg'), (1202, 902))
+    sc.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 90)
+    text_coord = 10
+    for line in intro_text:
+        string_rendered = font.render(line, True, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        sc.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                pygame.mixer.init()
+                pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
+                pygame.mixer.music.play()
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def load_image(name, colorkey=None):
@@ -246,6 +279,7 @@ End_Game = 0
 image_over = "Game_win.png"
 time_over = 0
 
+start_screen()
 while True:
     sc.fill(pygame.Color('darkslategray'))
     music(pygame.mixer.music.get_endevent())
@@ -320,9 +354,3 @@ while True:
 
     pygame.display.flip()
     clock.tick(10000)
-
-'''
-Идеи:
-1)Сделать таймер, который будет отсчитывать время до "GAME_OVER"
-2)Время прохождения лабиринта, которое будет выводится в конце
-'''
