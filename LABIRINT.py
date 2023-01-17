@@ -18,7 +18,11 @@ TILE = 60
 cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
 MILLISEC, SEC, MINUTE = 0, 0, 0
 TEXT_TIME = ''
+FONT = 40
 c = 0
+
+hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
+step_count = cols * rows // 2 + 50
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
@@ -105,22 +109,24 @@ def label_time():
         SEC = 0
         MINUTE += 1
     if SEC >= 10 and MINUTE >= 10:
-        TEXT_TIME = font.render(f"{MINUTE}:{SEC}", True, (100, 230, 200))
+        TEXT_TIME = f"{MINUTE}:{SEC}"
     elif SEC >= 10 > MINUTE:
-        TEXT_TIME = font.render(f"0{MINUTE}:{SEC}", True, (100, 230, 200))
+        TEXT_TIME = f"0{MINUTE}:{SEC}"
     elif SEC < 10 and MINUTE < 10:
-        TEXT_TIME = font.render(f"0{MINUTE}:0{SEC}", True, (100, 230, 200))
+        TEXT_TIME = f"0{MINUTE}:0{SEC}"
     elif SEC < 10 <= MINUTE:
-        TEXT_TIME = font.render(f"{MINUTE}:0{SEC}", True, (100, 230, 200))
+        TEXT_TIME = f"{MINUTE}:0{SEC}"
+
+    lab_time = font.render(TEXT_TIME, True, (100, 230, 200))
     text_x = cols * TILE + 30
     text_y = 80
-    text_w = TEXT_TIME.get_width()
-    text_h = TEXT_TIME.get_height()
+    text_w = lab_time.get_width()
+    text_h = lab_time.get_height()
     pygame.draw.rect(sc, (0, 0, 0), (text_x - 10, text_y - 10,
                                      text_w + 20, text_h + 20), 0)
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
                                        text_w + 20, text_h + 20), 2)
-    sc.blit(TEXT_TIME, (text_x, text_y))
+    sc.blit(lab_time, (text_x, text_y))
 
 
 def Game_time(game):
@@ -129,18 +135,23 @@ def Game_time(game):
     else:
         step_y = 300
     font = pygame.font.Font(None, 100)
-    TEXT = font.render(f"{MINUTE}:0{SEC}", True, (100, 230, 200))
-    text_x = WIDTH // 2 - TEXT.get_width() // 2
-    text_y = HEIGHT // 2 - TEXT.get_height() // 2 + step_y
-    text_w = TEXT.get_width()
-    text_h = TEXT.get_height()
+    TEXT = TEXT_TIME
+    game_time = font.render(TEXT, True, (100, 230, 200))
+    text_x = WIDTH // 2 - game_time.get_width() // 2
+    text_y = HEIGHT // 2 - game_time.get_height() // 2 + step_y
+    text_w = game_time.get_width()
+    text_h = game_time.get_height()
 
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
                                        text_w + 20, text_h + 20), 2)
-    sc.blit(TEXT, (text_x, text_y))
+    sc.blit(game_time, (text_x, text_y))
 
 
-''' оптимизировать over_time'''
+def check_cell(x, y):
+    find_index = lambda x, y: x + y * cols
+    if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
+        return False
+    return grid_cells[find_index(x, y)]
 
 
 class Cell:
@@ -176,18 +187,12 @@ class Cell:
         elif self.color == 40:
             self.step *= -1
 
-    def check_cell(self, x, y):
-        find_index = lambda x, y: x + y * cols
-        if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
-            return False
-        return grid_cells[find_index(x, y)]
-
     def check_neighbors(self):
         neighbors = []
-        top = self.check_cell(self.x, self.y - 1)
-        right = self.check_cell(self.x + 1, self.y)
-        bottom = self.check_cell(self.x, self.y + 1)
-        left = self.check_cell(self.x - 1, self.y)
+        top = check_cell(self.x, self.y - 1)
+        right = check_cell(self.x + 1, self.y)
+        bottom = check_cell(self.x, self.y + 1)
+        left = check_cell(self.x - 1, self.y)
         if top and not top.visited:
             neighbors.append(top)
         if right and not right.visited:
@@ -228,10 +233,10 @@ class Hero(Cell):
 
     def check_neighbors(self):
         neighbors = []
-        top = self.check_cell(self.x, self.y - 1)
-        right = self.check_cell(self.x + 1, self.y)
-        bottom = self.check_cell(self.x, self.y + 1)
-        left = self.check_cell(self.x - 1, self.y)
+        top = check_cell(self.x, self.y - 1)
+        right = check_cell(self.x + 1, self.y)
+        bottom = check_cell(self.x, self.y + 1)
+        left = check_cell(self.x - 1, self.y)
         if top:
             neighbors.append(['top', top])
         if right:
@@ -266,9 +271,7 @@ current_cell = grid_cells[0]
 stack = []
 colors, color = [], 40
 
-hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
 bag_Fix = 0
-step_count = cols * rows // 2 + 20
 
 game_start = 0
 End_Game = 0
@@ -327,12 +330,9 @@ while True:
         hero.draw()
         label_steps(step_count)
         label_time()
-
     if hero_x == 0 and hero_y == 0:
         End_Game = True
-
     pl_mn = 1
-    speed = 20
     if End_Game and not c:
         Game(all_sprites, image_over)
         c += 1
@@ -341,10 +341,11 @@ while True:
         for i in all_sprites:
             if i.rect.x + 5 + WIDTH > WIDTH:
                 pl_mn = 0
-            i.rect.x += speed * pl_mn
+            i.rect.x += 20 * pl_mn
         all_sprites.draw(sc)
         Game_time(image_over)
+        FONT = 100
         game_start = 2
 
     pygame.display.flip()
-    clock.tick(10000)
+    clock.tick(10)
