@@ -16,8 +16,9 @@ def music(flag):
 RES = WIDTH, HEIGHT = 1202, 902
 TILE = 60
 cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
-MINUTE = 0
-N = 0
+MILLISEC, SEC, MINUTE = 0, 0, 0
+TEXT_TIME = ''
+c = 0
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
@@ -92,56 +93,51 @@ def label_steps(steps):
     sc.blit(text, (text_x, text_y))
 
 
-def label_time(time):
-    minut, sec = 0, time
+def label_time():
+    global MINUTE, SEC, MILLISEC, TEXT_TIME
+    MILLISEC += clock.get_time()
     font = pygame.font.Font(None, 40)
-    if sec == 60:
-        minut += 1
-        sec = 0
-    if sec >= 10 and minut >= 10:
-        text = font.render(f"{minut}:{sec}", True, (100, 230, 200))
-    elif sec >= 10 > minut:
-        text = font.render(f"0{minut}:{sec}", True, (100, 230, 200))
-    elif sec < 10 and minut < 10:
-        text = font.render(f"0{minut}:0{sec}", True, (100, 230, 200))
-    elif sec < 10 <= minut:
-        text = font.render(f"{minut}:0{sec}", True, (100, 230, 200))
+
+    if MILLISEC > 1000:
+        SEC += 1
+        MILLISEC = 0
+    if SEC >= 60:
+        SEC = 0
+        MINUTE += 1
+    if SEC >= 10 and MINUTE >= 10:
+        TEXT_TIME = font.render(f"{MINUTE}:{SEC}", True, (100, 230, 200))
+    elif SEC >= 10 > MINUTE:
+        TEXT_TIME = font.render(f"0{MINUTE}:{SEC}", True, (100, 230, 200))
+    elif SEC < 10 and MINUTE < 10:
+        TEXT_TIME = font.render(f"0{MINUTE}:0{SEC}", True, (100, 230, 200))
+    elif SEC < 10 <= MINUTE:
+        TEXT_TIME = font.render(f"{MINUTE}:0{SEC}", True, (100, 230, 200))
     text_x = cols * TILE + 30
     text_y = 80
-    text_w = text.get_width()
-    text_h = text.get_height()
+    text_w = TEXT_TIME.get_width()
+    text_h = TEXT_TIME.get_height()
     pygame.draw.rect(sc, (0, 0, 0), (text_x - 10, text_y - 10,
                                      text_w + 20, text_h + 20), 0)
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
                                        text_w + 20, text_h + 20), 2)
-    sc.blit(text, (text_x, text_y))
+    sc.blit(TEXT_TIME, (text_x, text_y))
 
 
-def Game_time(time, game):
+def Game_time(game):
     if game == 'Game_win.png':
         step_y = 150
     else:
         step_y = 300
-    minut, sec = 0, time
     font = pygame.font.Font(None, 100)
-    if sec > 60:
-        minut += sec // 60
-        sec = sec - 60 * minut
-    if sec >= 10 and minut >= 10:
-        text = font.render(f"{minut}:{sec}", True, (100, 230, 200))
-    elif sec >= 10 > minut:
-        text = font.render(f"0{minut}:{sec}", True, (100, 230, 200))
-    elif sec < 10 and minut < 10:
-        text = font.render(f"0{minut}:0{sec}", True, (100, 230, 200))
-    elif sec < 10 <= minut:
-        text = font.render(f"{minut}:0{sec}", True, (100, 230, 200))
-    text_x = WIDTH // 2 - text.get_width() // 2
-    text_y = HEIGHT // 2 - text.get_height() // 2 + step_y
-    text_w = text.get_width()
-    text_h = text.get_height()
+    TEXT = font.render(f"{MINUTE}:0{SEC}", True, (100, 230, 200))
+    text_x = WIDTH // 2 - TEXT.get_width() // 2
+    text_y = HEIGHT // 2 - TEXT.get_height() // 2 + step_y
+    text_w = TEXT.get_width()
+    text_h = TEXT.get_height()
+
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
                                        text_w + 20, text_h + 20), 2)
-    sc.blit(text, (text_x, text_y))
+    sc.blit(TEXT, (text_x, text_y))
 
 
 ''' оптимизировать over_time'''
@@ -277,7 +273,6 @@ step_count = cols * rows // 2 + 20
 game_start = 0
 End_Game = 0
 image_over = "Game_win.png"
-time_over = 0
 
 start_screen()
 while True:
@@ -331,18 +326,16 @@ while True:
         hero = Hero(hero_x, hero_y)
         hero.draw()
         label_steps(step_count)
-
-        start_time = pygame.time.get_ticks() // 1000
-        label_time(start_time)
+        label_time()
 
     if hero_x == 0 and hero_y == 0:
         End_Game = True
 
     pl_mn = 1
     speed = 20
-    if End_Game and not time_over:
+    if End_Game and not c:
         Game(all_sprites, image_over)
-        time_over = start_time
+        c += 1
     if End_Game:
         sc.fill(pygame.color.Color(20, 20, 20))
         for i in all_sprites:
@@ -350,7 +343,8 @@ while True:
                 pl_mn = 0
             i.rect.x += speed * pl_mn
         all_sprites.draw(sc)
-        Game_time(time_over, image_over)
+        Game_time(image_over)
+        game_start = 2
 
     pygame.display.flip()
     clock.tick(10000)
