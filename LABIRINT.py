@@ -2,7 +2,7 @@ import os
 import random
 import time
 from random import choice
-from  Narabotka import enter_name
+from Narabotka import enter_name
 
 import pygame
 

@@ -11,12 +11,21 @@ clock = pygame.time.Clock()
 
 text = ''
 active = False
-input_box = pygame.Rect(WIDTH // 4, HEIGHT // 3 - 150, 630, 250)
+font_range = 50
+
+input_box_w = 50
+input_box_h = 100
+input_box_x = WIDTH / 2 - input_box_w
+input_box_y = HEIGHT / 2 - input_box_h
+
+input_box = pygame.Rect(input_box_x, input_box_y, input_box_w, input_box_h)
 text_input_f = True
+max_col_txt = 8
 
 
 def enter_name():
-    global active, text_input_f, text, text_input_f
+    global active, text_input_f, text, text_input_f, max_col_txt
+    global input_box_x, input_box_y, input_box_w, input_box_h
     active = True
 
     while True:
@@ -34,17 +43,27 @@ def enter_name():
                         return
                     elif event.key == pygame.K_BACKSPACE:
                         text = text[:-1]
+                        input_box_w -= font_range
+                        input_box_x += font_range / 2
                     else:
                         if text_input_f:
                             text += event.unicode
         sc.fill(pygame.color.Color(20, 20, 20))
-        font = pygame.font.Font('MonsterFriendBack.otf', 70)
+        font = pygame.font.Font('MonsterFriendBack.otf', font_range)
+
+        enter_n = font.render('Enter your name', True, 'white')
         txt_surface = font.render(text, True, 'white')
-        if max(input_box.w, txt_surface.get_width() + 75) == txt_surface.get_width() + 75:
+
+        if len(text) == max_col_txt:
             text_input_f = False
         else:
             text_input_f = True
-        sc.blit(txt_surface, (input_box.x + 5, input_box.y + 5))
-        pygame.draw.rect(sc, 'green', (WIDTH // 4, HEIGHT // 4 - 150, input_box.w, 250), 1)
+        if input_box_w <= txt_surface.get_width():
+            input_box_w += font_range
+            input_box_x -= font_range / 2
+
+        sc.blit(txt_surface, (input_box_x + 10, input_box_y))
+        sc.blit(enter_n, (WIDTH / 5, HEIGHT / 6))
+        pygame.draw.rect(sc, 'gray', (input_box_x, input_box_y - font_range // 2, input_box_w, input_box_h), 2)
         pygame.display.flip()
         clock.tick(1000)
