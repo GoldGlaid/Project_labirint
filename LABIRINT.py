@@ -2,6 +2,7 @@ import os
 import random
 import time
 from random import choice
+from  Narabotka import enter_name
 
 import pygame
 
@@ -55,12 +56,9 @@ def start_screen():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                terminate()
+                exit()
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
-                pygame.mixer.init()
-                pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
-                pygame.mixer.music.play()
                 return
         pygame.display.flip()
         clock.tick(FPS)
@@ -277,6 +275,8 @@ End_Game = 0
 image_over = "Game_win.png"
 
 start_screen()
+enter_name()
+
 while True:
     sc.fill(pygame.Color('darkslategray'))
     music(pygame.mixer.music.get_endevent())
