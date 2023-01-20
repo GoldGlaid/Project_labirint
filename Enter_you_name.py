@@ -20,12 +20,12 @@ input_box_y = HEIGHT / 2 - input_box_h
 
 input_box = pygame.Rect(input_box_x, input_box_y, input_box_w, input_box_h)
 text_input_f = True
-max_col_txt = 8
+max_col_txt = 9
 
 
 def enter_name():
     global active, text_input_f, text, text_input_f, max_col_txt
-    global input_box_x, input_box_y, input_box_w, input_box_h
+    global input_box_x, input_box_y, input_box_w, input_box_h, NAME
     active = True
 
     while True:
@@ -35,12 +35,11 @@ def enter_name():
             if event.type == pygame.KEYDOWN:
                 if active:
                     if event.key == pygame.K_RETURN:
-                        print(text)
-                        text = ''
                         pygame.mixer.init()
                         pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
                         pygame.mixer.music.play()
-                        return
+                        return text
+
                     elif event.key == pygame.K_BACKSPACE:
                         text = text[:-1]
                         input_box_w -= font_range

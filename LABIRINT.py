@@ -1,26 +1,49 @@
 import os
 import random
+import sqlite3
 import time
 from random import choice
-from Narabotka import enter_name
 
 import pygame
+
+from Enter_you_name import enter_name
+from LeaderBord import leader_board
+
+
+def insert_result(names, time, wl):
+    con = sqlite3.connect('Leader_board.db')
+    cur = con.cursor()
+    cur.execute("""INSERT INTO board(name, result, winorloss) VALUES('{}', '{}', '{}')""".format(names, time, wl))
+    con.commit()
+    con.close()
+
+
+def get_result():
+    con = sqlite3.connect('Leader_board.db')
+    cur = con.cursor()
+    result = cur.execute('''SELECT * FROM board WHERE winorloss like "WIN"''').fetchall()
+    con.commit()
+    con.close()
+    return result
 
 
 def music(flag):
     if flag:
         print('m')
-        pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
+        pygame.mixer.music.load('music\\Savkov_Igor_RiverTravel.mp3')
         pygame.mixer.music.play()
 
 
 RES = WIDTH, HEIGHT = 1202, 902
-TILE = 60
+TILE = 50
 cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
 MILLISEC, SEC, MINUTE = 0, 0, 0
-TEXT_TIME = ''
+
 FONT = 40
 c = 0
+
+TEXT_TIME = ''
+WL = 'LOSS'
 
 hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
 step_count = cols * rows // 2 + 50
@@ -275,8 +298,7 @@ End_Game = 0
 image_over = "Game_win.png"
 
 start_screen()
-enter_name()
-
+NAME = enter_name()
 while True:
     sc.fill(pygame.Color('darkslategray'))
     music(pygame.mixer.music.get_endevent())
@@ -304,6 +326,7 @@ while True:
         if not step_count:
             image_over = "Game_over.png"
             End_Game = True
+            WL = 'LOSS'
 
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
@@ -331,10 +354,12 @@ while True:
         label_time()
     if hero_x == 0 and hero_y == 0:
         End_Game = True
+        WL = 'WIN'
     pl_mn = 1
     if End_Game and not c:
         Game(all_sprites, image_over)
         c += 1
+        insert_result(NAME, TEXT_TIME, WL)
     if End_Game:
         sc.fill(pygame.color.Color(20, 20, 20))
         for i in all_sprites:
@@ -346,5 +371,7 @@ while True:
         FONT = 100
         game_start = 2
 
+        time.sleep(5)
+        leader_board()
     pygame.display.flip()
-    clock.tick(100006)
+    clock.tick(10000)
