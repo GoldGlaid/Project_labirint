@@ -29,7 +29,6 @@ sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 pygame.display.set_caption('Лабиринт')
 
-pygame.display.set_caption('Лабиринт')
 FPS = 90
 
 all_sprites = pygame.sprite.Group()
@@ -348,4 +347,4 @@ while True:
         game_start = 2
 
     pygame.display.flip()
-    clock.tick(10)
+    clock.tick(100006)
