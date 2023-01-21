@@ -39,7 +39,6 @@ TILE = 50
 cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
 MILLISEC, SEC, MINUTE = 0, 0, 0
 
-FONT = 40
 c = 0
 
 TEXT_TIME = ''
@@ -359,19 +358,18 @@ while True:
     if End_Game and not c:
         Game(all_sprites, image_over)
         c += 1
-        insert_result(NAME, TEXT_TIME, WL)
     if End_Game:
         sc.fill(pygame.color.Color(20, 20, 20))
         for i in all_sprites:
             if i.rect.x + 5 + WIDTH > WIDTH:
                 pl_mn = 0
+                time.sleep(3)
+                insert_result(NAME, TEXT_TIME, WL)
+                leader_board()
             i.rect.x += 20 * pl_mn
         all_sprites.draw(sc)
         Game_time(image_over)
-        FONT = 100
         game_start = 2
 
-        time.sleep(5)
-        leader_board()
     pygame.display.flip()
     clock.tick(10000)

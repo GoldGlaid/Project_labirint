@@ -4,7 +4,6 @@ import sqlite3
 pygame.init()
 
 RES = WIDTH, HEIGHT = 1202, 902
-TILE = 60
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
@@ -46,6 +45,7 @@ def leader_board():
 
             pl_time = font2.render(f"{time}", True, 'white')
             sc.blit(pl_time, (WIDTH // 6 + 600, next_step))
+
             next_step += 75
             st += 1
             if st > 10:
@@ -55,5 +55,3 @@ def leader_board():
         pygame.draw.rect(sc, 'gray', (WIDTH // 8, 80, WIDTH - WIDTH // 4, HEIGHT - 90), 2)
         pygame.display.flip()
         clock.tick(1000)
-
-
