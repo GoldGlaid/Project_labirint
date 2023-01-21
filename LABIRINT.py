@@ -1,32 +1,89 @@
 import os
 import random
+import sqlite3
 import time
 from random import choice
 
 import pygame
 
-pygame.mixer.init()
-pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
-pygame.mixer.music.play()
+from Enter_you_name import enter_name
+from LeaderBord import leader_board
+
+
+def insert_result(names, time, wl):
+    con = sqlite3.connect('Leader_board.db')
+    cur = con.cursor()
+    cur.execute("""INSERT INTO board(name, result, winorloss) VALUES('{}', '{}', '{}')""".format(names, time, wl))
+    con.commit()
+    con.close()
+
+
+def get_result():
+    con = sqlite3.connect('Leader_board.db')
+    cur = con.cursor()
+    result = cur.execute('''SELECT * FROM board WHERE winorloss like "WIN"''').fetchall()
+    con.commit()
+    con.close()
+    return result
 
 
 def music(flag):
     if flag:
         print('m')
-        pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
+        pygame.mixer.music.load('music\\Savkov_Igor_RiverTravel.mp3')
         pygame.mixer.music.play()
 
 
 RES = WIDTH, HEIGHT = 1202, 902
-TILE = 60
+TILE = 50
 cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
+MILLISEC, SEC, MINUTE = 0, 0, 0
+
+c = 0
+
+TEXT_TIME = ''
+WL = 'LOSS'
+
+hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
+step_count = cols * rows // 2 + 50
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 pygame.display.set_caption('Лабиринт')
 
+FPS = 90
+
 all_sprites = pygame.sprite.Group()
+
+
+def start_screen():
+    intro_text = ["Лабиринт", "",
+                  "На языке Pythone",
+                  ]
+
+    fon = pygame.transform.scale(load_image('fon(1).jpg'), (1202, 902))
+    sc.blit(fon, (0, 0))
+    font = pygame.font.Font(None, 90)
+    text_coord = 10
+    for line in intro_text:
+        string_rendered = font.render(line, True, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        text_coord += 10
+        intro_rect.top = text_coord
+        intro_rect.x = 10
+        text_coord += intro_rect.height
+        sc.blit(string_rendered, intro_rect)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                exit()
+            elif event.type == pygame.KEYDOWN or \
+                    event.type == pygame.MOUSEBUTTONDOWN:
+                return
+        pygame.display.flip()
+        clock.tick(FPS)
 
 
 def load_image(name, colorkey=None):
@@ -59,59 +116,61 @@ def label_steps(steps):
     sc.blit(text, (text_x, text_y))
 
 
-def label_time(time):
-    minut, sec = 0, time
+def label_time():
+    global MINUTE, SEC, MILLISEC, TEXT_TIME
+    MILLISEC += clock.get_time()
     font = pygame.font.Font(None, 40)
-    if sec == 60:
-        minut += 1
-        sec = 0
-    if sec >= 10 and minut >= 10:
-        text = font.render(f"{minut}:{sec}", True, (100, 230, 200))
-    elif sec >= 10 > minut:
-        text = font.render(f"0{minut}:{sec}", True, (100, 230, 200))
-    elif sec < 10 and minut < 10:
-        text = font.render(f"0{minut}:0{sec}", True, (100, 230, 200))
-    elif sec < 10 <= minut:
-        text = font.render(f"{minut}:0{sec}", True, (100, 230, 200))
+
+    if MILLISEC > 1000:
+        SEC += 1
+        MILLISEC = 0
+    if SEC >= 60:
+        SEC = 0
+        MINUTE += 1
+    if SEC >= 10 and MINUTE >= 10:
+        TEXT_TIME = f"{MINUTE}:{SEC}"
+    elif SEC >= 10 > MINUTE:
+        TEXT_TIME = f"0{MINUTE}:{SEC}"
+    elif SEC < 10 and MINUTE < 10:
+        TEXT_TIME = f"0{MINUTE}:0{SEC}"
+    elif SEC < 10 <= MINUTE:
+        TEXT_TIME = f"{MINUTE}:0{SEC}"
+
+    lab_time = font.render(TEXT_TIME, True, (100, 230, 200))
     text_x = cols * TILE + 30
     text_y = 80
-    text_w = text.get_width()
-    text_h = text.get_height()
+    text_w = lab_time.get_width()
+    text_h = lab_time.get_height()
     pygame.draw.rect(sc, (0, 0, 0), (text_x - 10, text_y - 10,
                                      text_w + 20, text_h + 20), 0)
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
                                        text_w + 20, text_h + 20), 2)
-    sc.blit(text, (text_x, text_y))
+    sc.blit(lab_time, (text_x, text_y))
 
 
-def Game_time(time, game):
+def Game_time(game):
     if game == 'Game_win.png':
         step_y = 150
     else:
         step_y = 300
-    minut, sec = 0, time
     font = pygame.font.Font(None, 100)
-    if sec > 60:
-        minut += sec // 60
-        sec = sec - 60 * minut
-    if sec >= 10 and minut >= 10:
-        text = font.render(f"{minut}:{sec}", True, (100, 230, 200))
-    elif sec >= 10 > minut:
-        text = font.render(f"0{minut}:{sec}", True, (100, 230, 200))
-    elif sec < 10 and minut < 10:
-        text = font.render(f"0{minut}:0{sec}", True, (100, 230, 200))
-    elif sec < 10 <= minut:
-        text = font.render(f"{minut}:0{sec}", True, (100, 230, 200))
-    text_x = WIDTH // 2 - text.get_width() // 2
-    text_y = HEIGHT // 2 - text.get_height() // 2 + step_y
-    text_w = text.get_width()
-    text_h = text.get_height()
+    TEXT = TEXT_TIME
+    game_time = font.render(TEXT, True, (100, 230, 200))
+    text_x = WIDTH // 2 - game_time.get_width() // 2
+    text_y = HEIGHT // 2 - game_time.get_height() // 2 + step_y
+    text_w = game_time.get_width()
+    text_h = game_time.get_height()
+
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
                                        text_w + 20, text_h + 20), 2)
-    sc.blit(text, (text_x, text_y))
+    sc.blit(game_time, (text_x, text_y))
 
 
-''' оптимизировать over_time'''
+def check_cell(x, y):
+    find_index = lambda x, y: x + y * cols
+    if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
+        return False
+    return grid_cells[find_index(x, y)]
 
 
 class Cell:
@@ -147,18 +206,12 @@ class Cell:
         elif self.color == 40:
             self.step *= -1
 
-    def check_cell(self, x, y):
-        find_index = lambda x, y: x + y * cols
-        if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
-            return False
-        return grid_cells[find_index(x, y)]
-
     def check_neighbors(self):
         neighbors = []
-        top = self.check_cell(self.x, self.y - 1)
-        right = self.check_cell(self.x + 1, self.y)
-        bottom = self.check_cell(self.x, self.y + 1)
-        left = self.check_cell(self.x - 1, self.y)
+        top = check_cell(self.x, self.y - 1)
+        right = check_cell(self.x + 1, self.y)
+        bottom = check_cell(self.x, self.y + 1)
+        left = check_cell(self.x - 1, self.y)
         if top and not top.visited:
             neighbors.append(top)
         if right and not right.visited:
@@ -199,10 +252,10 @@ class Hero(Cell):
 
     def check_neighbors(self):
         neighbors = []
-        top = self.check_cell(self.x, self.y - 1)
-        right = self.check_cell(self.x + 1, self.y)
-        bottom = self.check_cell(self.x, self.y + 1)
-        left = self.check_cell(self.x - 1, self.y)
+        top = check_cell(self.x, self.y - 1)
+        right = check_cell(self.x + 1, self.y)
+        bottom = check_cell(self.x, self.y + 1)
+        left = check_cell(self.x - 1, self.y)
         if top:
             neighbors.append(['top', top])
         if right:
@@ -237,15 +290,14 @@ current_cell = grid_cells[0]
 stack = []
 colors, color = [], 40
 
-hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
 bag_Fix = 0
-step_count = cols * rows // 2 + 20
 
 game_start = 0
 End_Game = 0
 image_over = "Game_win.png"
-time_over = 0
 
+start_screen()
+NAME = enter_name()
 while True:
     sc.fill(pygame.Color('darkslategray'))
     music(pygame.mixer.music.get_endevent())
@@ -273,6 +325,7 @@ while True:
         if not step_count:
             image_over = "Game_over.png"
             End_Game = True
+            WL = 'LOSS'
 
     [cell.draw() for cell in grid_cells]
     current_cell.visited = True
@@ -297,32 +350,26 @@ while True:
         hero = Hero(hero_x, hero_y)
         hero.draw()
         label_steps(step_count)
-
-        start_time = pygame.time.get_ticks() // 1000
-        label_time(start_time)
-
+        label_time()
     if hero_x == 0 and hero_y == 0:
         End_Game = True
-
+        WL = 'WIN'
     pl_mn = 1
-    speed = 20
-    if End_Game and not time_over:
+    if End_Game and not c:
         Game(all_sprites, image_over)
-        time_over = start_time
+        c += 1
     if End_Game:
         sc.fill(pygame.color.Color(20, 20, 20))
         for i in all_sprites:
             if i.rect.x + 5 + WIDTH > WIDTH:
                 pl_mn = 0
-            i.rect.x += speed * pl_mn
+                time.sleep(3)
+                insert_result(NAME, TEXT_TIME, WL)
+                leader_board()
+            i.rect.x += 20 * pl_mn
         all_sprites.draw(sc)
-        Game_time(time_over, image_over)
+        Game_time(image_over)
+        game_start = 2
 
     pygame.display.flip()
     clock.tick(10000)
-
-'''
-Идеи:
-1)Сделать таймер, который будет отсчитывать время до "GAME_OVER"
-2)Время прохождения лабиринта, которое будет выводится в конце
-'''
