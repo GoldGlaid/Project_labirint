@@ -70,6 +70,32 @@ class Dino2(pygame.sprite.Sprite):
         self.rect.y = 500
 
 
+class Coca(pygame.sprite.Sprite):
+    image = load_image('coconut.png')
+    image = pygame.transform.scale(image, (500, 600))
+    image = pygame.transform.flip(image, True, False)
+
+    def __init__(self, group):
+        super().__init__(group)
+        self.image = Coca.image
+        self.rect = self.image.get_rect()
+        self.rect.x = 740
+        self.rect.y = 290
+
+
+class Coca2(pygame.sprite.Sprite):
+    image = load_image('coconut.png')
+    image = pygame.transform.scale(image, (500, 600))
+
+    def __init__(self, group):
+        super().__init__(group)
+        self.image = Coca2.image
+        self.rect = self.image.get_rect()
+        self.rect.x = -50
+        self.rect.y = 290
+
+Coca(all_sprites)
+Coca2(all_sprites)
 Dino(all_sprites)
 Dino2(all_sprites)
 
