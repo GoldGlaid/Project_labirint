@@ -13,7 +13,6 @@ sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 
 text = ''
-active = False
 font_range = 50
 
 input_box_w = 50
@@ -94,6 +93,7 @@ class Coca2(pygame.sprite.Sprite):
         self.rect.x = -50
         self.rect.y = 290
 
+
 Coca(all_sprites)
 Coca2(all_sprites)
 Dino(all_sprites)
@@ -103,27 +103,22 @@ Dino2(all_sprites)
 def enter_name():
     global active, text_input_f, text, text_input_f, max_col_txt
     global input_box_x, input_box_y, input_box_w, input_box_h, NAME
-    active = True
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 exit()
             if event.type == pygame.KEYDOWN:
-                if active:
-                    if event.key == pygame.K_RETURN:
-                        pygame.mixer.init()
-                        pygame.mixer.music.load('music\Savkov_Igor_RiverTravel.mp3')
-                        pygame.mixer.music.play()
-                        return text
+                if event.key == pygame.K_RETURN:
+                    return text
 
-                    elif event.key == pygame.K_BACKSPACE:
-                        text = text[:-1]
-                        input_box_w -= font_range
-                        input_box_x += font_range / 2
-                    else:
-                        if text_input_f:
-                            text += event.unicode
+                elif event.key == pygame.K_BACKSPACE:
+                    text = text[:-1]
+                    input_box_w -= font_range
+                    input_box_x += font_range / 2
+                else:
+                    if text_input_f:
+                        text += event.unicode
         sc.fill(pygame.color.Color(15, 0, 44))
         font = pygame.font.Font('MonsterFriendBack.otf', font_range)
 

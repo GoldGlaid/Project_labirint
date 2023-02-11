@@ -6,14 +6,16 @@ from random import choice
 
 import pygame
 
+from Choice_HORL import choise_hard
 from Enter_you_name import enter_name
 from LeaderBord import leader_board
 
 
-def insert_result(names, time, wl):
+def insert_result(board, names, time, wl):
     con = sqlite3.connect('Leader_board.db')
     cur = con.cursor()
-    cur.execute("""INSERT INTO board(name, result, winorloss) VALUES('{}', '{}', '{}')""".format(names, time, wl))
+    cur.execute("""INSERT INTO {}(name, result, winorloss) \
+                    VALUES('{}', '{}', '{}')""".format(board, names, time, wl))
     con.commit()
     con.close()
 
@@ -35,17 +37,15 @@ def music(flag):
 
 
 RES = WIDTH, HEIGHT = 1202, 902
-TILE = 50
-cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
+TILE = None
+
 MILLISEC, SEC, MINUTE = 0, 0, 0
+time_flag_start = False
 
 c = 0
 
 TEXT_TIME = ''
 WL = 'LOSS'
-
-hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
-step_count = cols * rows // 2 + 50
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
@@ -62,7 +62,7 @@ def start_screen():
                   "На языке Pythone",
                   ]
 
-    fon = pygame.transform.scale(load_image('fon(1).jpg'), (1202, 902))
+    fon = pygame.transform.scale(load_image('fon(1).jpg'), (WIDTH, HEIGHT))
     sc.blit(fon, (0, 0))
     font = pygame.font.Font(None, 90)
     text_coord = 10
@@ -120,13 +120,13 @@ def label_time():
     global MINUTE, SEC, MILLISEC, TEXT_TIME
     MILLISEC += clock.get_time()
     font = pygame.font.Font(None, 40)
-
-    if MILLISEC > 1000:
-        SEC += 1
-        MILLISEC = 0
-    if SEC >= 60:
-        SEC = 0
-        MINUTE += 1
+    if time_flag_start:
+        if MILLISEC > 1000:
+            SEC += 1
+            MILLISEC = 0
+        if SEC >= 60:
+            SEC = 0
+            MINUTE += 1
     if SEC >= 10 and MINUTE >= 10:
         TEXT_TIME = f"{MINUTE}:{SEC}"
     elif SEC >= 10 > MINUTE:
@@ -285,8 +285,6 @@ class Game(pygame.sprite.Sprite):
         self.rect.y = self.rect[1]
 
 
-grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
-current_cell = grid_cells[0]
 stack = []
 colors, color = [], 40
 
@@ -298,6 +296,18 @@ image_over = "Game_win.png"
 
 start_screen()
 NAME = enter_name()
+TILE, HARD = choise_hard()
+if HARD == 'Easy':
+    BOARD = 'easy_board'
+elif HARD == 'Medium':
+    BOARD = 'medium_board'
+else:
+    BOARD = 'hard_board'
+cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
+hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
+step_count = cols * rows // 2 + 50
+grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
+current_cell = grid_cells[0]
 while True:
     sc.fill(pygame.Color('darkslategray'))
     music(pygame.mixer.music.get_endevent())
@@ -310,18 +320,22 @@ while True:
                 if hero.move('left'):
                     hero_x -= 1
                     step_count -= 1
+                    time_flag_start = True
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
                 if hero.move('right'):
                     hero_x += 1
                     step_count -= 1
+                    time_flag_start = True
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 if hero.move('top'):
                     hero_y -= 1
                     step_count -= 1
+                    time_flag_start = True
             if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
                 if hero.move('bottom'):
                     hero_y += 1
                     step_count -= 1
+                    time_flag_start = True
         if not step_count:
             image_over = "Game_over.png"
             End_Game = True
@@ -364,8 +378,8 @@ while True:
             if i.rect.x + 5 + WIDTH > WIDTH:
                 pl_mn = 0
                 time.sleep(3)
-                insert_result(NAME, TEXT_TIME, WL)
-                leader_board()
+                insert_result(BOARD, NAME, TEXT_TIME, WL)
+                leader_board(BOARD)
             i.rect.x += 20 * pl_mn
         all_sprites.draw(sc)
         Game_time(image_over)
@@ -373,3 +387,13 @@ while True:
 
     pygame.display.flip()
     clock.tick(10000)
+
+
+# (ВЫПОЛНЕНО) Сделать начало таймера с 1 хода игрока либо через какой-то промежуток времени,
+# чтобы игрок мог запомнить и соорентироваться на местности'''
+
+# '''Сделать доп.режим "Туман Войны", идея заключается в том, чтобы со временем стены теряли бы цвет, и
+# было бы необходимо запомнить строение лабиринта'''
+#
+# '''(ВЫПОЛНЕНО)Сделать начальный экран с выбором уровня сложности
+# (Просто добавить кнопки с изменением параметра TILE) '''
