@@ -20,7 +20,6 @@ def choise_hard():
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = pygame.mouse.get_pos()
-                print(x, y)
                 if (WIDTH / 3 - 20 <= x <= WIDTH / 3 - 20 + txt_medium.get_width() + 40) and \
                     (HEIGHT // 3 - 20 <= y <= HEIGHT // 3 - 20 + txt_medium.get_height() + 30):
                     active = True
