@@ -10,6 +10,25 @@ from Choice_HORL import choise_hard
 from Enter_you_name import enter_name
 from LeaderBord import leader_board
 
+RES = WIDTH, HEIGHT = 1202, 902
+TILE = None
+
+MILLISEC, SEC, MINUTE = 0, 0, 0
+time_flag_start = False
+
+c = 0
+
+TEXT_TIME = ''
+WL = 'LOSS'
+
+pygame.init()
+sc = pygame.display.set_mode(RES)
+clock = pygame.time.Clock()
+pygame.display.set_caption('Лабиринт')
+
+FPS = 90
+
+all_sprites = pygame.sprite.Group()
 
 def insert_result(board, names, time, wl):
     con = sqlite3.connect('Leader_board.db')
@@ -34,28 +53,6 @@ def music(flag):
         print('m')
         pygame.mixer.music.load('music\\Savkov_Igor_RiverTravel.mp3')
         pygame.mixer.music.play()
-
-
-RES = WIDTH, HEIGHT = 1202, 902
-TILE = None
-
-MILLISEC, SEC, MINUTE = 0, 0, 0
-time_flag_start = False
-
-c = 0
-
-TEXT_TIME = ''
-WL = 'LOSS'
-
-pygame.init()
-sc = pygame.display.set_mode(RES)
-clock = pygame.time.Clock()
-pygame.display.set_caption('Лабиринт')
-
-FPS = 90
-
-all_sprites = pygame.sprite.Group()
-
 
 def start_screen():
     intro_text = ["Лабиринт", "",
@@ -283,110 +280,140 @@ class Game(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = -WIDTH
         self.rect.y = self.rect[1]
+def main():
+    global  WIDTH, HEIGHT, TILE, MINUTE, MILLISEC, SEC, TEXT_TIME, WL, \
+        time_flag_start, FPS, cols, rows, grid_cells, rerun, hero, hero_x, hero_y
+    RES = WIDTH, HEIGHT = 1202, 902
+    TILE = None
 
+    MILLISEC, SEC, MINUTE = 0, 0, 0
+    time_flag_start = False
 
-stack = []
-colors, color = [], 40
+    c = 0
 
-bag_Fix = 0
+    TEXT_TIME = ''
+    WL = 'LOSS'
 
-game_start = 0
-End_Game = 0
-image_over = "Game_win.png"
+    pygame.init()
+    sc = pygame.display.set_mode(RES)
+    clock = pygame.time.Clock()
+    pygame.display.set_caption('Лабиринт')
 
-start_screen()
-NAME = enter_name()
-TILE, HARD = choise_hard()
-if HARD == 'Easy':
-    BOARD = 'easy_board'
-elif HARD == 'Medium':
-    BOARD = 'medium_board'
-else:
-    BOARD = 'hard_board'
-cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
-hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
-step_count = cols * rows // 2 + 50
-grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
-current_cell = grid_cells[0]
-while True:
-    sc.fill(pygame.Color('darkslategray'))
-    music(pygame.mixer.music.get_endevent())
+    FPS = 90
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            exit()
-        if bag_Fix and step_count:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                if hero.move('left'):
-                    hero_x -= 1
-                    step_count -= 1
-                    time_flag_start = True
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                if hero.move('right'):
-                    hero_x += 1
-                    step_count -= 1
-                    time_flag_start = True
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                if hero.move('top'):
-                    hero_y -= 1
-                    step_count -= 1
-                    time_flag_start = True
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                if hero.move('bottom'):
-                    hero_y += 1
-                    step_count -= 1
-                    time_flag_start = True
-        if not step_count:
-            image_over = "Game_over.png"
+    all_sprites = pygame.sprite.Group()
+
+    stack = []
+    colors, color = [], 40
+
+    bag_Fix = 0
+
+    game_start = 0
+    End_Game = 0
+    image_over = "Game_win.png"
+
+    start_screen()
+    NAME = enter_name()
+    TILE, HARD = choise_hard()
+    if HARD == 'Easy':
+        BOARD = 'easy_board'
+    elif HARD == 'Medium':
+        BOARD = 'medium_board'
+    else:
+        BOARD = 'hard_board'
+    cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
+    hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
+    step_count = cols * rows // 2 + 50
+    grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
+    current_cell = grid_cells[0]
+    while True:
+        sc.fill(pygame.Color('darkslategray'))
+        music(pygame.mixer.music.get_endevent())
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                rerun = True
+                break
+
+            if bag_Fix and step_count:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                    if hero.move('left'):
+                        hero_x -= 1
+                        step_count -= 1
+                        time_flag_start = True
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                    if hero.move('right'):
+                        hero_x += 1
+                        step_count -= 1
+                        time_flag_start = True
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                    if hero.move('top'):
+                        hero_y -= 1
+                        step_count -= 1
+                        time_flag_start = True
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                    if hero.move('bottom'):
+                        hero_y += 1
+                        step_count -= 1
+                        time_flag_start = True
+            if not step_count:
+                image_over = "Game_over.png"
+                End_Game = True
+                WL = 'LOSS'
+
+        [cell.draw() for cell in grid_cells]
+        current_cell.visited = True
+        current_cell.draw_current_cell()
+        [pygame.draw.rect(sc, colors[i], (cell.x * TILE + 2, cell.y * TILE + 2,
+                                          TILE - 4, TILE - 4)) for i, cell in enumerate(stack)]
+
+        next_cell = current_cell.check_neighbors()
+        if next_cell:
+            next_cell.visited = True
+            stack.append(current_cell)
+            colors.append((min(color, 255), 10, 100))
+            color += 1
+            remove_walls(current_cell, next_cell)
+            current_cell = next_cell
+        elif stack:
+            current_cell = stack.pop()
+        if current_cell.x == 0 and current_cell.y == 0 and not game_start:
+            game_start += 1
+        if game_start == 1:
+            bag_Fix = 1
+            hero = Hero(hero_x, hero_y)
+            hero.draw()
+            label_steps(step_count)
+            label_time()
+        if hero_x == 0 and hero_y == 0:
             End_Game = True
-            WL = 'LOSS'
+            WL = 'WIN'
+        pl_mn = 1
+        if End_Game and not c:
+            Game(all_sprites, image_over)
+            c += 1
+        if End_Game:
+            sc.fill(pygame.color.Color(20, 20, 20))
+            for i in all_sprites:
+                if i.rect.x + 5 + WIDTH > WIDTH:
+                    pl_mn = 0
+                    time.sleep(3)
+                    insert_result(BOARD, NAME, TEXT_TIME, WL)
+                    leader_board(BOARD)
+                i.rect.x += 20 * pl_mn
+            all_sprites.draw(sc)
+            Game_time(image_over)
+            game_start = 2
 
-    [cell.draw() for cell in grid_cells]
-    current_cell.visited = True
-    current_cell.draw_current_cell()
-    [pygame.draw.rect(sc, colors[i], (cell.x * TILE + 2, cell.y * TILE + 2,
-                                      TILE - 4, TILE - 4)) for i, cell in enumerate(stack)]
+        pygame.display.flip()
+        clock.tick(10000)
 
-    next_cell = current_cell.check_neighbors()
-    if next_cell:
-        next_cell.visited = True
-        stack.append(current_cell)
-        colors.append((min(color, 255), 10, 100))
-        color += 1
-        remove_walls(current_cell, next_cell)
-        current_cell = next_cell
-    elif stack:
-        current_cell = stack.pop()
-    if current_cell.x == 0 and current_cell.y == 0 and not game_start:
-        game_start += 1
-    if game_start == 1:
-        bag_Fix = 1
-        hero = Hero(hero_x, hero_y)
-        hero.draw()
-        label_steps(step_count)
-        label_time()
-    if hero_x == 0 and hero_y == 0:
-        End_Game = True
-        WL = 'WIN'
-    pl_mn = 1
-    if End_Game and not c:
-        Game(all_sprites, image_over)
-        c += 1
-    if End_Game:
-        sc.fill(pygame.color.Color(20, 20, 20))
-        for i in all_sprites:
-            if i.rect.x + 5 + WIDTH > WIDTH:
-                pl_mn = 0
-                time.sleep(3)
-                insert_result(BOARD, NAME, TEXT_TIME, WL)
-                leader_board(BOARD)
-            i.rect.x += 20 * pl_mn
-        all_sprites.draw(sc)
-        Game_time(image_over)
-        game_start = 2
-
-    pygame.display.flip()
-    clock.tick(10000)
+if __name__ == '__main__':
+    main()
+    if rerun:
+        main()
 
 
 # (ВЫПОЛНЕНО) Сделать начало таймера с 1 хода игрока либо через какой-то промежуток времени,
