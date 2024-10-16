@@ -2,17 +2,15 @@ import sqlite3
 
 import pygame
 
-pygame.init()
-
-RES = WIDTH, HEIGHT = 1202, 902
+from parametrs import RES, WIDTH, HEIGHT
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
 clock = pygame.time.Clock()
 
 text = ''
-font_range_menu = 45
-font_range_text = 50
+font_range_menu = 75
+font_range_text = 80
 
 
 def get_result(board):
@@ -26,23 +24,29 @@ def get_result(board):
 
 def leader_board(board):
     list_leaders = sorted(get_result(board), key=lambda x: int(x[1][:2]) * 60 + int(x[1][3:]))
+    rerun = False
     while True:
+        if rerun:
+            break
         for event in pygame.event.get():
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 exit()
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                rerun = True
+                break
         sc.fill(pygame.color.Color(20, 20, 20))
-        font1 = pygame.font.Font('MonsterFriendFore.otf', font_range_menu)
-        font2 = pygame.font.Font('MonsterFriendBack.otf', font_range_text)
+        font1 = pygame.font.Font('data/fonts/determinationmonorusbylyajk.otf', font_range_menu)
+        font2 = pygame.font.Font('data/fonts/determinationmonorusbylyajk.otf', font_range_text)
 
-        enter_n = font1.render('Leader board TOP 10 ({})'.format(board[:-6]), True, 'white')
+        enter_n = font1.render('LEADER BOARD TOP 10 ({})'.format(board[:-6].upper()), True, 'gold')
 
         next_step = 120
         st = 1
         for name, time, wl in list_leaders:
-            player = font2.render(f"{st}. {name}", True, 'white')
+            player = font2.render(f"{st}. {name.upper()}", True, 'white')
             sc.blit(player, (WIDTH // 6, next_step))
 
-            pl_time = font2.render(f"{time}", True, 'white')
+            pl_time = font2.render(f"{time.upper()}", True, 'white')
             sc.blit(pl_time, (WIDTH // 6 + 600, next_step))
 
             next_step += 75
@@ -50,7 +54,7 @@ def leader_board(board):
             if st > 10:
                 break
 
-        sc.blit(enter_n, (WIDTH // 15, 20))
-        pygame.draw.rect(sc, 'gray', (WIDTH // 8, 80, WIDTH - WIDTH // 4, HEIGHT - 90), 2)
+        sc.blit(enter_n, (WIDTH // 10, 20))
+        pygame.draw.rect(sc, 'gold', (WIDTH // 8, 90, WIDTH - WIDTH // 4, HEIGHT - 120), 2)
         pygame.display.flip()
         clock.tick(1000)

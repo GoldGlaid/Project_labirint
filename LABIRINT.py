@@ -1,4 +1,3 @@
-import os
 import random
 import sqlite3
 import time
@@ -8,9 +7,10 @@ import pygame
 
 from Choice_HORL import choise_hard
 from Enter_you_name import enter_name
+from Enter_you_name import load_image
 from LeaderBord import leader_board
+from parametrs import RES, WIDTH, HEIGHT
 
-RES = WIDTH, HEIGHT = 1202, 902
 TILE = None
 
 MILLISEC, SEC, MINUTE = 0, 0, 0
@@ -30,37 +30,30 @@ FPS = 90
 
 all_sprites = pygame.sprite.Group()
 
-def insert_result(board, names, time, wl):
+
+def insert_result(board, names, game_time, wl):
     con = sqlite3.connect('Leader_board.db')
     cur = con.cursor()
-    cur.execute("""INSERT INTO {}(name, result, winorloss) \
-                    VALUES('{}', '{}', '{}')""".format(board, names, time, wl))
+    cur.execute("""INSERT INTO {} (name, result, winorloss) \
+                    VALUES('{}', '{}', '{}')""".format(board, names, game_time, wl))
     con.commit()
     con.close()
-
-
-def get_result():
-    con = sqlite3.connect('Leader_board.db')
-    cur = con.cursor()
-    result = cur.execute('''SELECT * FROM board WHERE winorloss like "WIN"''').fetchall()
-    con.commit()
-    con.close()
-    return result
 
 
 def music(flag):
     if flag:
         print('m')
-        pygame.mixer.music.load('music\\Savkov_Igor_RiverTravel.mp3')
+        pygame.mixer.music.load('data/music/Savkov_Igor_RiverTravel.mp3')
         pygame.mixer.music.play()
+
 
 def start_screen():
     intro_text = ["Лабиринт", "",
-                  "На языке Pythone",
-                  ]
+                  "На языке Pythone"]
 
     fon = pygame.transform.scale(load_image('fon(1).jpg'), (WIDTH, HEIGHT))
     sc.blit(fon, (0, 0))
+
     font = pygame.font.Font(None, 90)
     text_coord = 10
     for line in intro_text:
@@ -79,33 +72,20 @@ def start_screen():
             elif event.type == pygame.KEYDOWN or \
                     event.type == pygame.MOUSEBUTTONDOWN:
                 return
+
         pygame.display.flip()
         clock.tick(FPS)
-
-
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    else:
-        image = image.convert_alpha()
-    return image
 
 
 def label_steps(steps):
     font = pygame.font.Font(None, 30)
     text = font.render(f"Осталось шагов {steps}", True, (100, 255, 100))
-    text_x = cols * TILE + 30
+
+    text_x = COLS * TILE + 30
     text_y = 30
     text_w = text.get_width()
     text_h = text.get_height()
+
     pygame.draw.rect(sc, (0, 0, 0), (text_x - 10, text_y - 10,
                                      text_w + 20, text_h + 20), 0)
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
@@ -134,10 +114,12 @@ def label_time():
         TEXT_TIME = f"{MINUTE}:0{SEC}"
 
     lab_time = font.render(TEXT_TIME, True, (100, 230, 200))
-    text_x = cols * TILE + 30
+
+    text_x = COLS * TILE + 30
     text_y = 80
     text_w = lab_time.get_width()
     text_h = lab_time.get_height()
+
     pygame.draw.rect(sc, (0, 0, 0), (text_x - 10, text_y - 10,
                                      text_w + 20, text_h + 20), 0)
     pygame.draw.rect(sc, (0, 255, 0), (text_x - 10, text_y - 10,
@@ -151,8 +133,8 @@ def Game_time(game):
     else:
         step_y = 300
     font = pygame.font.Font(None, 100)
-    TEXT = TEXT_TIME
-    game_time = font.render(TEXT, True, (100, 230, 200))
+    text_time = TEXT_TIME
+    game_time = font.render(text_time, True, (100, 230, 200))
     text_x = WIDTH // 2 - game_time.get_width() // 2
     text_y = HEIGHT // 2 - game_time.get_height() // 2 + step_y
     text_w = game_time.get_width()
@@ -164,8 +146,8 @@ def Game_time(game):
 
 
 def check_cell(x, y):
-    find_index = lambda x, y: x + y * cols
-    if x < 0 or x > cols - 1 or y < 0 or y > rows - 1:
+    find_index = lambda a, b: a + b * COLS
+    if x < 0 or x > COLS - 1 or y < 0 or y > ROWS - 1:
         return False
     return grid_cells[find_index(x, y)]
 
@@ -263,10 +245,11 @@ class Hero(Cell):
             neighbors.append(['left', left])
         return neighbors if neighbors else False
 
-    def move(self, direction):
+    @staticmethod
+    def move(direction):
         for i in hero.check_neighbors():
             if i[0] == direction:
-                if not grid_cells[hero_x + hero_y * cols].walls[direction]:
+                if not grid_cells[hero_x + hero_y * COLS].walls[direction]:
                     return True
         return False
 
@@ -280,12 +263,18 @@ class Game(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = -WIDTH
         self.rect.y = self.rect[1]
-def main():
-    global  WIDTH, HEIGHT, TILE, MINUTE, MILLISEC, SEC, TEXT_TIME, WL, \
-        time_flag_start, FPS, cols, rows, grid_cells, rerun, hero, hero_x, hero_y
-    RES = WIDTH, HEIGHT = 1202, 902
-    TILE = None
 
+
+rerun = False
+
+
+def main():
+    global TILE, MINUTE, MILLISEC, SEC, TEXT_TIME, WL, \
+        time_flag_start, FPS, COLS, ROWS, grid_cells, rerun, hero, hero_x, hero_y
+
+    res = RES
+    TILE = None
+    rerun = False
     MILLISEC, SEC, MINUTE = 0, 0, 0
     time_flag_start = False
 
@@ -294,10 +283,10 @@ def main():
     TEXT_TIME = ''
     WL = 'LOSS'
 
-    pygame.init()
-    sc = pygame.display.set_mode(RES)
-    clock = pygame.time.Clock()
     pygame.display.set_caption('Лабиринт')
+
+    sc = pygame.display.set_mode(res)
+    clock = pygame.time.Clock()
 
     FPS = 90
 
@@ -306,26 +295,28 @@ def main():
     stack = []
     colors, color = [], 40
 
-    bag_Fix = 0
+    bag_fix = 0
 
     game_start = 0
-    End_Game = 0
+    end_game = 0
     image_over = "Game_win.png"
 
     start_screen()
-    NAME = enter_name()
-    TILE, HARD = choise_hard()
-    if HARD == 'Easy':
-        BOARD = 'easy_board'
-    elif HARD == 'Medium':
-        BOARD = 'medium_board'
+    user_name = enter_name()
+    TILE, hard = choise_hard()
+    if hard == 'Easy':
+        board = 'easy_board'
+    elif hard == 'Medium':
+        board = 'medium_board'
     else:
-        BOARD = 'hard_board'
-    cols, rows = WIDTH // TILE - 5, HEIGHT // TILE
-    hero_y, hero_x = random.randint(5, rows - 2), random.randint(5, cols - 2)
-    step_count = cols * rows // 2 + 50
-    grid_cells = [Cell(col, row) for row in range(rows) for col in range(cols)]
+        board = 'hard_board'
+
+    COLS, ROWS = WIDTH // TILE - 5, HEIGHT // TILE
+    hero_y, hero_x = random.randint(5, ROWS - 2), random.randint(5, COLS - 2)
+    step_count = COLS * ROWS // 2 + 50
+    grid_cells = [Cell(col, row) for row in range(ROWS) for col in range(COLS)]
     current_cell = grid_cells[0]
+
     while True:
         sc.fill(pygame.Color('darkslategray'))
         music(pygame.mixer.music.get_endevent())
@@ -337,7 +328,7 @@ def main():
                 rerun = True
                 break
 
-            if bag_Fix and step_count:
+            if bag_fix and step_count:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
                     if hero.move('left'):
                         hero_x -= 1
@@ -360,7 +351,7 @@ def main():
                         time_flag_start = True
             if not step_count:
                 image_over = "Game_over.png"
-                End_Game = True
+                end_game = True
                 WL = 'LOSS'
 
         [cell.draw() for cell in grid_cells]
@@ -379,29 +370,33 @@ def main():
             current_cell = next_cell
         elif stack:
             current_cell = stack.pop()
+
         if current_cell.x == 0 and current_cell.y == 0 and not game_start:
             game_start += 1
+
         if game_start == 1:
-            bag_Fix = 1
+            bag_fix = 1
             hero = Hero(hero_x, hero_y)
             hero.draw()
             label_steps(step_count)
             label_time()
+
         if hero_x == 0 and hero_y == 0:
-            End_Game = True
+            end_game = True
             WL = 'WIN'
-        pl_mn = 1
-        if End_Game and not c:
+
+        if end_game and not c:
             Game(all_sprites, image_over)
             c += 1
-        if End_Game:
+        pl_mn = 1
+        if end_game:
             sc.fill(pygame.color.Color(20, 20, 20))
             for i in all_sprites:
                 if i.rect.x + 5 + WIDTH > WIDTH:
                     pl_mn = 0
                     time.sleep(3)
-                    insert_result(BOARD, NAME, TEXT_TIME, WL)
-                    leader_board(BOARD)
+                    insert_result(board, user_name, TEXT_TIME, WL)
+                    leader_board(board)
                 i.rect.x += 20 * pl_mn
             all_sprites.draw(sc)
             Game_time(image_over)
@@ -410,11 +405,12 @@ def main():
         pygame.display.flip()
         clock.tick(10000)
 
+        if rerun:
+            main()
+
+
 if __name__ == '__main__':
     main()
-    if rerun:
-        main()
-
 
 # (ВЫПОЛНЕНО) Сделать начало таймера с 1 хода игрока либо через какой-то промежуток времени,
 # чтобы игрок мог запомнить и соорентироваться на местности'''
@@ -424,3 +420,5 @@ if __name__ == '__main__':
 #
 # '''(ВЫПОЛНЕНО)Сделать начальный экран с выбором уровня сложности
 # (Просто добавить кнопки с изменением параметра TILE) '''
+
+# '''(ВЫПОЛНЕНО)Сделать перезагрузку игры на кнопку "R"'''
