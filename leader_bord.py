@@ -2,7 +2,7 @@ import sqlite3
 
 import pygame
 
-from parametrs import RES, WIDTH, HEIGHT
+from parametrs import RES, WIDTH, HEIGHT, CENTER_WIDTH, CENTER_HEIGHT
 
 pygame.init()
 sc = pygame.display.set_mode(RES)
@@ -38,7 +38,7 @@ def leader_board(board):
         font1 = pygame.font.Font('data/fonts/determinationmonorusbylyajk.otf', font_range_menu)
         font2 = pygame.font.Font('data/fonts/determinationmonorusbylyajk.otf', font_range_text)
 
-        enter_n = font1.render('LEADER BOARD TOP 10 ({})'.format(board[:-6].upper()), True, 'gold')
+        leader_board_text = font1.render('LEADER BOARD TOP 10 ({})'.format(board[:-6].upper()), True, 'gold')
 
         next_step = 120
         st = 1
@@ -54,7 +54,7 @@ def leader_board(board):
             if st > 10:
                 break
 
-        sc.blit(enter_n, (WIDTH // 10, 20))
+        sc.blit(leader_board_text, (CENTER_WIDTH - leader_board_text.get_width() // 2, 20))
         pygame.draw.rect(sc, 'gold', (WIDTH // 8, 90, WIDTH - WIDTH // 4, HEIGHT - 120), 2)
         pygame.display.flip()
         clock.tick(1000)

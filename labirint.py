@@ -5,18 +5,16 @@ from random import choice
 
 import pygame
 
-from Choice_HORL import choise_hard
-from Enter_you_name import enter_name
-from Enter_you_name import load_image
-from LeaderBord import leader_board
+from change_hard import choise_hard
+from leader_bord import leader_board
+from name_entering import enter_name
+from name_entering import load_image
 from parametrs import RES, WIDTH, HEIGHT
 
 TILE = None
 
 MILLISEC, SEC, MINUTE = 0, 0, 0
 time_flag_start = False
-
-c = 0
 
 TEXT_TIME = ''
 WL = 'LOSS'
@@ -44,6 +42,8 @@ def music(flag):
     if flag:
         print('m')
         pygame.mixer.music.load('data/music/Savkov_Igor_RiverTravel.mp3')
+        pygame.mixer.music.set_volume(10.0)
+
         pygame.mixer.music.play()
 
 
@@ -357,8 +357,12 @@ def main():
         [cell.draw() for cell in grid_cells]
         current_cell.visited = True
         current_cell.draw_current_cell()
-        [pygame.draw.rect(sc, colors[i], (cell.x * TILE + 2, cell.y * TILE + 2,
-                                          TILE - 4, TILE - 4)) for i, cell in enumerate(stack)]
+
+        [pygame.draw.rect(sc, colors[i], (
+            cell.x * TILE + 2,
+            cell.y * TILE + 2,
+            TILE - 4,
+            TILE - 4)) for i, cell in enumerate(stack)]
 
         next_cell = current_cell.check_neighbors()
         if next_cell:
